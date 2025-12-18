@@ -219,7 +219,7 @@ const label = {
 const input = {
   width: '100%',
   height: 40,
-  padding: '8px 0px',
+  padding: '0px 0px',
   borderRadius: 6,
   border: '1px solid #cbd5e1',
   fontSize: 14

@@ -1,10 +1,10 @@
-// backend/controllers/sales.controller.js
-
 const sales = require('../models/sale.model')
-const clients = require('../models/client.model')
 const users = require('../models/user.model')
 const products = require('../models/product.model')
 
+// ============================
+// CREAR VENTA
+// ============================
 exports.createSale = (req, res) => {
   const { fecha, clienteId, usuarioId, pago, items } = req.body
 
@@ -13,28 +13,40 @@ exports.createSale = (req, res) => {
   }
 
   const usuario = users.find(u => u.id == usuarioId)
-
   if (!usuario) {
     return res.status(404).json({ message: 'Usuario no encontrado' })
   }
 
   let subtotal = 0
 
-  for (let item of items) {
-    const p = products.find(pr => pr.id == item.productId)
+  // ✅ ITEMS ENRIQUECIDOS
+  const detailedItems = items.map(item => {
+    const product = products.find(p => p.id == item.productId)
 
-    if (!p) return res.status(404).json({ message: 'Producto no encontrado' })
-
-    if (p.stock_actual < item.cantidad) {
-      return res.status(400).json({ message: 'Stock insuficiente' })
+    if (!product) {
+      return null
     }
 
-    subtotal += item.cantidad * p.precio_venta
-  }
+    if (product.stock_actual < item.cantidad) {
+      throw new Error('Stock insuficiente')
+    }
 
-  items.forEach(item => {
-    const p = products.find(pr => pr.id == item.productId)
-    p.stock_actual -= item.cantidad
+    const itemSubtotal = item.cantidad * product.precio_venta
+    subtotal += itemSubtotal
+
+    return {
+      productId: product.id,
+      nombre: product.nombre,
+      precio: product.precio_venta,
+      cantidad: item.cantidad,
+      subtotal: itemSubtotal
+    }
+  }).filter(Boolean)
+
+  // Descontar stock
+  detailedItems.forEach(item => {
+    const product = products.find(p => p.id == item.productId)
+    product.stock_actual -= item.cantidad
   })
 
   const iva = subtotal * 0.12
@@ -43,10 +55,13 @@ exports.createSale = (req, res) => {
   const newSale = {
     id: sales.length + 1,
     fecha,
-    clienteId,
-    usuario: { id: usuario.id, username: usuario.username },
+    clienteId: Number(clienteId),
+    usuario: {
+      id: usuario.id,
+      username: usuario.username
+    },
     pago,
-    items,
+    items: detailedItems, // ✅ GUARDADO CORRECTO
     subtotal,
     iva,
     total,
@@ -54,21 +69,39 @@ exports.createSale = (req, res) => {
   }
 
   sales.push(newSale)
-
-  res.json(newSale)
+  res.status(201).json(newSale)
 }
 
 
+// ============================
+// LISTAR VENTAS
+// ============================
+exports.getSales = (req, res) => {
+  res.json(sales)
+}
+
+// ============================
+// ANULAR VENTA
+// ============================
 exports.cancelSale = (req, res) => {
   const { id } = req.params
+
   const sale = sales.find(s => s.id == id)
 
-  if (!sale) return res.status(404).json({ message: 'Venta no encontrada' })
-  if (sale.anulada) return res.status(400).json({ message: 'Ya está anulada' })
+  if (!sale) {
+    return res.status(404).json({ message: 'Venta no encontrada' })
+  }
 
-  sale.items.forEach(i => {
-    const product = products.find(p => p.id === i.productId)
-    if (product) product.stock_actual += i.cantidad
+  if (sale.anulada) {
+    return res.status(400).json({ message: 'La venta ya fue anulada' })
+  }
+
+  // Restaurar stock
+  sale.items.forEach(item => {
+    const product = products.find(p => p.id == item.productId)
+    if (product) {
+      product.stock_actual += item.cantidad
+    }
   })
 
   sale.anulada = true

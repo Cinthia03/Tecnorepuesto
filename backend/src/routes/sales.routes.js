@@ -2,14 +2,13 @@ const express = require('express')
 const router = express.Router()
 const controller = require('../controllers/sales.controller')
 
-// CREAR VENTA
+// Crear venta
 router.post('/', controller.createSale)
 
-// HISTORIAL
+// Listar ventas
 router.get('/', controller.getSales)
 
-// ❌ ANULAR VENTA
+// Anular venta
 router.put('/:id/cancel', controller.cancelSale)
 
 module.exports = router
-

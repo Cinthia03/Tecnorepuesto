@@ -87,19 +87,20 @@ export default function Sales() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         fecha: date,
-        clienteId: clientId,
-        usuario: user,
+        clienteId: Number(clientId),
+        usuarioId: user.id,      // ✅ SOLO ID
         pago: payment,
-        items: cart,
-        subtotal,
-        iva,
-        total
+        items: cart.map(i => ({
+          productId: i.productId,
+          cantidad: i.cantidad
+        }))
       })
     })
 
     alert('✅ Venta registrada correctamente')
     setCart([])
   }
+
 
   // =========================
   // RENDER
