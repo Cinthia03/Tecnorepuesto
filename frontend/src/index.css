@@ -1,0 +1,25 @@
+body {
+  font-family: Arial;
+  background: #f4f4f4;
+}
+
+.login {
+  width: 300px;
+  margin: 100px auto;
+  background: white;
+  padding: 20px;
+}
+
+input, button {
+  width: 100%;
+  margin: 5px 0;
+  padding: 8px;
+}
+
+.error {
+  color: red;
+}
+
+nav button {
+  margin-right: 10px;
+}

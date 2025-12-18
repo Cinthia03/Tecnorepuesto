@@ -1,0 +1,30 @@
+name: Deploy Frontend - GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout del repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Subir frontend como artefacto
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: frontend
+
+      - name: Desplegar en GitHub Pages
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,30 @@
+name: Deploy Backend - Node.js
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Instalar dependencias
+        run: npm install
+        working-directory: backend
+
+      - name: Ejecutar pruebas
+        run: npm test
+        working-directory: backend
+
+      - name: Deploy Backend (simulado)
+        run: echo "Backend desplegado correctamente"

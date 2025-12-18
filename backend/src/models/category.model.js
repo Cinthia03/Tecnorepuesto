@@ -1,0 +1,4 @@
+module.exports = [
+{ id: 1, name: 'Bebidas' },
+{ id: 2, name: 'Snacks' }
+];
